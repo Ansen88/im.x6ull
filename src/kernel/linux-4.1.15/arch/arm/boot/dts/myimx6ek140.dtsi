@@ -1,0 +1,326 @@
+/*
+ * MYZR Technology Co.,Ltd
+ * http://www.myzr.com.cn
+ * Tang Bin <tangb@myzr.com.cn>
+ */
+
+/ {
+    chosen {
+        stdout-path = &uart1;
+    };
+
+    memory {
+        reg = <0x80000000 0x20000000>;
+    };
+
+    backlight {
+        compatible = "pwm-backlight";
+        pwms = <&pwm4 0 5000000>;
+        brightness-levels = <0 4 8 16 32 64 128 255>;
+        default-brightness-level = <4>;
+        status = "okay";
+    };
+
+    pxp_v4l2 {
+        compatible = "fsl,imx6ul-pxp-v4l2", "fsl,imx6sx-pxp-v4l2", "fsl,imx6sl-pxp-v4l2";
+        status = "okay";
+    };
+
+    regulators {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <0>;
+    };
+
+    leds {
+        compatible = "gpio-leds";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_snvs_gpio_leds>;
+
+        led-default {
+            label = "default";
+            gpios = <&gpio5 4 0>;
+            linux,default-trigger = "default-on";
+            default-state = "on";
+        };
+
+        led-heartbeat {
+            label = "Heartbeat";
+            gpios = <&gpio5 1 0>;
+            linux,default-trigger = "heartbeat";
+        };
+
+        led-timer {
+            linux,default-trigger = "timer";
+            gpios = <&gpio5 8 0>;
+            default-state = "off";
+        };
+
+        led-gpio {
+            label = "leds-gpio";
+            gpios = <&gpio5 5 0>;
+            linux,default-trigger = "gpio";
+        };
+    };
+};
+
+&cpu0 {
+    arm-supply = <&reg_arm>;
+    soc-supply = <&reg_soc>;
+};
+
+&clks {
+    assigned-clocks = <&clks IMX6UL_CLK_PLL4_AUDIO_DIV>;
+    assigned-clock-rates = <786432000>;
+};
+
+&ecspi1 {
+    fsl,spi-num-chipselects = <1>;
+    cs-gpios = <&gpio4 26 0>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_csi_ecspi1 &pinctrl_csi_ecspi1_cs0>;
+    status = "disabled";
+
+    spidev0: spi@0 {
+        compatible = "spidev";
+        spi-max-frequency = <20000000>;
+        reg = <0>;
+    };
+};
+
+&ecspi2 {
+    fsl,spi-num-chipselects = <1>;
+    cs-gpios = <&gpio4 22 0>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_csi_ecspi2 &pinctrl_csi_ecspi2_cs0>;
+    status = "okay";
+
+    spidev1: spi@0 {
+        compatible = "spidev";
+        spi-max-frequency = <20000000>;
+        reg = <0>;
+    };
+};
+
+&fec1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gpio1_enet1_smi &pinctrl_enet1_enet1 &pinctrl_snvs_enet1_gpio>;
+    phy-mode = "rmii";
+    phy-handle = <&ethphy0>;
+    status = "okay";
+
+    mdio {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        ethphy0: ethernet-phy@0 {
+             compatible = "ethernet-phy-ieee802.3-c22";
+             reg = <0>;
+         };
+    };
+};
+
+&fec2 {
+    status = "disabled";
+};
+
+&flexcan1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart3_flexcan1>;
+    status = "okay";
+};
+
+&flexcan2 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart2_flexcan2>;
+    status = "okay";
+};
+
+&gpc {
+    fsl,cpu_pupscr_sw2iso = <0x1>;
+    fsl,cpu_pupscr_sw = <0x0>;
+    fsl,cpu_pdnscr_iso2sw = <0x1>;
+    fsl,cpu_pdnscr_iso = <0x1>;
+    fsl,wdog-reset = <1>; /* watchdog select of reset source */
+    fsl,ldo-bypass = <0>; /* DCDC, ldo-enable */
+};
+
+&i2c1 {
+    clock-frequency = <100000>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_csi_i2c1>;
+    status = "okay";
+	
+	myts_ft5x0x@38 {
+		compatible = "myzr,myts-ft5316";
+		reg = <0x38>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_snvs_ts>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <0 0>;
+		linux,wakeup;
+    };
+};
+
+&i2c2 {
+    clock_frequency = <100000>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_csi_i2c2>;
+    status = "okay";
+};
+
+&lcdif {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_lcd_lcdif_ctrl &pinctrl_lcd_lcdif_data>;
+    display = <&display0>;
+    status = "okay";
+
+    display0: display {
+        bits-per-pixel = <16>;
+        bus-width = <24>;
+
+    display-timings {
+        native-mode = <&timing0>;
+        timing0: timing0 {
+             clock-frequency = <9200000>;
+             hactive = <480>;
+             vactive = <272>;
+             hfront-porch = <8>;
+             hback-porch = <4>;
+             hsync-len = <41>;
+             vback-porch = <2>;
+             vfront-porch = <4>;
+             vsync-len = <10>;
+
+             hsync-active = <0>;
+             vsync-active = <0>;
+             de-active = <1>;
+             pixelclk-active = <0>;
+            };
+        };
+    };
+};
+
+&pwm2 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gpio1_pwm2>;
+    clocks = <&clks IMX6UL_CLK_PWM2>,
+           <&clks IMX6UL_CLK_PWM2>;
+    status = "okay";
+};
+
+&pwm4 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gpio1_pwm4>;
+    clocks = <&clks IMX6UL_CLK_PWM4>,
+           <&clks IMX6UL_CLK_PWM4>;
+    status = "okay";
+};
+
+&pwm5 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_nand_pwm5>;
+    clocks = <&clks IMX6UL_CLK_PWM5>,
+           <&clks IMX6UL_CLK_PWM5>;
+    status = "okay";
+};
+
+&pxp {
+    status = "okay";
+};
+
+&sai2 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_jtag_sai2>;
+    assigned-clocks = <&clks IMX6UL_CLK_SAI2_SEL>,
+        <&clks IMX6UL_CLK_SAI2>;
+    assigned-clock-parents = <&clks IMX6UL_CLK_PLL4_AUDIO_DIV>;
+    assigned-clock-rates = <0>, <12288000>;
+    status = "okay";
+};
+
+&tsc {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gpio1_tsc>;
+    xnur-gpio = <&gpio1 3 GPIO_ACTIVE_LOW>;
+    measure-delay-time = <0xffff>;
+    pre-charge-time = <0xfff>;
+    status = "okay";
+};
+
+&uart1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart1_uart1>;
+    status = "okay";
+};
+
+&uart2 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart2_uart2>;
+    status = "okay";
+};
+
+&uart3 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart3_uart3>;
+    status = "okay";
+};
+
+&uart4 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart4_uart4>;
+    status = "okay";
+};
+
+&uart5 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_uart5_uart5>;
+    status = "okay";
+};
+
+&uart6 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_enet2_uart6>;
+    status = "okay";
+};
+
+&uart7 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_enet2_uart7>;
+    status = "okay";
+};
+
+&uart8 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_enet2_uart8>;
+    fsl,uart-has-rtscts;
+    status = "okay";
+};
+
+&usbotg1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gpio1_usb_otg1_id>;
+    srp-disable;
+    hnp-disable;
+    adp-disable;
+    status = "okay";
+};
+
+&usbotg2 {
+    dr_mode = "host";
+    disable-over-current;
+    status = "okay";
+};
+
+&usdhc1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_sd1_usdhc1>;
+    keep-power-in-suspend;
+    enable-sdio-wakeup;
+    status = "okay";
+};
+
+&iomuxc {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_nand_gpio &pinctrl_gpio1_gpio &pinctrl_uart1_gpio &pinctrl_snvs_gpio>;
+};

@@ -1,0 +1,18 @@
+/*
+ * MYZR Technology Co.,Ltd
+ * http://www.myzr.com.cn
+ * Tang Bin <tangb@myzr.com.cn>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/input/input.h>
+#include "imx6ul.dtsi"
+#include "myimx6cb140-nand.dtsi"
+#include "myimx6ek140-iomuxc.dtsi"
+#include "myimx6ek140.dtsi"
+
+/ {
+	model = "MY-IMX6-EK140 (i.MX6UL, Nand, 140 Pins) Board";
+	compatible = "myzr,myimx6cb140", "myzr,myimx6ek140", "fsl,imx6ul";
+};
